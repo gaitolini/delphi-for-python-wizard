@@ -34,16 +34,13 @@ fi
 # 2. Detect Target Folders (.agent or Global Antigravity)
 INSTALL_PATHS=()
 
-# Check local workspace for .agent / .agent/skills
-LOCAL_AGENT_DIR="${CURRENT_DIR}/.agent"
-if [ -d "${LOCAL_AGENT_DIR}" ]; then
-    echo "[Info] Diretório do agente local (.agent) detectado na pasta atual."
-    LOCAL_SKILLS_DIR="${LOCAL_AGENT_DIR}/skills"
-    mkdir -p "${LOCAL_SKILLS_DIR}"
-    INSTALL_PATHS+=("${LOCAL_SKILLS_DIR}/${SKILL_FOLDER_NAME}")
-fi
+# Always install locally in the current workspace folder (.agent/skills)
+echo "[Info] Configurando estrutura local .agent/skills..."
+LOCAL_SKILLS_DIR="${CURRENT_DIR}/.agent/skills"
+mkdir -p "${LOCAL_SKILLS_DIR}"
+INSTALL_PATHS+=("${LOCAL_SKILLS_DIR}/${SKILL_FOLDER_NAME}")
 
-# Check global Antigravity path (Windows user profile or Unix home)
+# Check and install in global Antigravity path if available
 if [ -n "$USERPROFILE" ]; then
     GLOBAL_SKILLS_DIR="${USERPROFILE}/.gemini/antigravity/skills"
 else
@@ -53,19 +50,11 @@ fi
 if [ -d "${GLOBAL_SKILLS_DIR}" ]; then
     INSTALL_PATHS+=("${GLOBAL_SKILLS_DIR}/${SKILL_FOLDER_NAME}")
 else
-    # If parent gemini dir exists, we can create skills folder
     GLOBAL_BASE=$(dirname "${GLOBAL_SKILLS_DIR}")
     if [ -d "${GLOBAL_BASE}" ]; then
         mkdir -p "${GLOBAL_SKILLS_DIR}"
         INSTALL_PATHS+=("${GLOBAL_SKILLS_DIR}/${SKILL_FOLDER_NAME}")
     fi
-fi
-
-# Default Fallback if none found
-if [ ${#INSTALL_PATHS[@]} -eq 0 ]; then
-    DEFAULT_LOCAL_DIR="${CURRENT_DIR}/.agent/skills"
-    mkdir -p "${DEFAULT_LOCAL_DIR}"
-    INSTALL_PATHS+=("${DEFAULT_LOCAL_DIR}/${SKILL_FOLDER_NAME}")
 fi
 
 # 3. Copy Skill Files to Targets

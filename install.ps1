@@ -37,16 +37,13 @@ if (!(Test-Path (Join-Path $SourceSkillPath "SKILL.md"))) {
 # 2. Detect Target Folders (.agent or Global Antigravity)
 $InstallPaths = @()
 
-# Check local workspace for .agent / .agent/skills
-$LocalAgentDir = Join-Path $CurrentDir ".agent"
-if (Test-Path $LocalAgentDir) {
-    Write-Host "[Info] Diretório do agente local (.agent) detectado na pasta atual." -ForegroundColor Green
-    $LocalSkillsDir = Join-Path $LocalAgentDir "skills"
-    New-Item -ItemType Directory -Force -Path $LocalSkillsDir | Out-Null
-    $InstallPaths += Join-Path $LocalSkillsDir $SkillFolderName
-}
+# Always install locally in the current workspace folder (.agent/skills)
+Write-Host "[Info] Configurando estrutura local .agent/skills..." -ForegroundColor Green
+$LocalSkillsDir = Join-Path (Join-Path $CurrentDir ".agent") "skills"
+New-Item -ItemType Directory -Force -Path $LocalSkillsDir | Out-Null
+$InstallPaths += Join-Path $LocalSkillsDir $SkillFolderName
 
-# Check global Antigravity path
+# Check and install in global Antigravity path if available
 $GlobalSkillsDir = Join-Path $env:USERPROFILE ".gemini" "antigravity" "skills"
 if (Test-Path $GlobalSkillsDir) {
     $InstallPaths += Join-Path $GlobalSkillsDir $SkillFolderName
@@ -57,13 +54,6 @@ if (Test-Path $GlobalSkillsDir) {
         New-Item -ItemType Directory -Force -Path $GlobalSkillsDir | Out-Null
         $InstallPaths += Join-Path $GlobalSkillsDir $SkillFolderName
     }
-}
-
-# Default Fallback if none found
-if ($InstallPaths.Count -eq 0) {
-    $DefaultLocalDir = Join-Path (Join-Path $CurrentDir ".agent") "skills"
-    New-Item -ItemType Directory -Force -Path $DefaultLocalDir | Out-Null
-    $InstallPaths += Join-Path $DefaultLocalDir $SkillFolderName
 }
 
 # 3. Copy Skill Files to Targets
